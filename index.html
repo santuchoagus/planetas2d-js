@@ -11,7 +11,7 @@
   }
 </style>
 <script>
-	var pantalla = document.querySelector("canvas");
+  var pantalla = document.querySelector("canvas");
   var pincel = pantalla.getContext("2d");
   pincel.fillStyle = "black";
   
@@ -25,27 +25,36 @@
   
   // Lista de planetas.
   var planetas = [
-  	{x:40, y:30, vx:0.4, vy:0.2, masa:2.7e1, radio:6, color:"#ee499e"},
+    {x:120, y:70, vx:0.4, vy:0.2, masa:2.7e1, radio:6, color:"#ee499e"},
     {x:600, y:200, vx:-0.6, vy:0, masa:4.4e1, radio:8, color:"#49c2ee"},
     {x:320, y:100, vx:-0.2, vy:-0.6, masa:1.4e1, radio:4, color:"#ff00ff"}
   ];
   
   // Constante gravitacional.
-  const K_GRAVEDAD = 0.02;
+  const K_GRAVEDAD = 0.05;
   // Densidad del radio en relación a su masa.
   const K_DENSIDAD = 0.03;
   // velocidad máxima.
   const K_MAXVELOCIDAD = 100;
 
 	function generarPlanetas(cantidad) {
+        let _vx, _vy;
   	planetas = [];
     for (let i = 0; i < cantidad; i++) {
-    	let _masa = Math.trunc(Math.random()*9.5e3) + 250
+      let _masa = Math.trunc(Math.random()*5.5e3) + 250
+      if (_masa < 4.5e3) {
+        _masa = Math.trunc(Math.random()*2.5e3) + 250;
+        _vx = (Math.random() * 1.5) * (Math.round(Math.random()) ? 1 : -1);
+        _vy = (Math.random() * 1.5) * (Math.round(Math.random()) ? 1 : -1);
+      } else {
+        _vx = (Math.random() * 0.15) * (Math.round(Math.random()) ? 1 : -1);
+        _vy = (Math.random() * 0.15) * (Math.round(Math.random()) ? 1 : -1);
+        _masa;
+      }
+
       let _radio = Math.trunc(Math.pow(_masa/(Math.PI*K_DENSIDAD),1/4))
       let _x = Math.random()*800
       let _y = Math.random()*600
-      let _vx = (Math.random() * 2) * (Math.round(Math.random()) ? 1 : -1);
-      let _vy = (Math.random() * 2) * (Math.round(Math.random()) ? 1 : -1);
       let _color = "#"
       _color += Math.trunc(Math.random()*0xe0).toString(16);
       _color += Math.trunc(Math.random()*0xe0).toString(16);
@@ -115,8 +124,8 @@
         let modulo = Math.sqrt((planetas[i].x - planetas[j].x)**2 + (planetas[i].y - planetas[j].y)**2);
         // Si su distancia es menor a la suma de los radios, es porque colisionaron.
         if (modulo < planetas[i].radio + planetas[j].radio) {
-        	// colisionaron los planetas "j" e "i".
-          // console.log("colision " + i + " y " + j)
+          // colisionaron los planetas "j" e "i".
+          console.log("colision " + i + " y " + j)
           /* 
            * Criterio de inercia, si las masas son iguales, gana el de mas velocidad.
            * si las velocidades son iguales, gana el de mas masa.
@@ -127,18 +136,37 @@
           // g es el indice del planeta ganador, p del perdedor.
           let g, p;
           if (planetas[i].masa > planetas[j].masa) {
-          	g = i;
+            g = i;
             p = j;
           } else {
-          	g = j;
+            g = j;
             p = i;
           }
           planetas[g].vx = planetas[g].vx/planetas[p].masa + planetas[p].vx/planetas[g].masa;
           planetas[g].masa = planetas[g].masa + planetas[p].masa;
           planetas[g].radio = Math.trunc(Math.pow(planetas[g].masa/(Math.PI*K_DENSIDAD),1/4));
+          // color promedio.
+          let clr1 = planetas[i].color;
+          let clr2 = planetas[j].color;
+          // calculo "densidades" de color
+          let dcolor_i = planetas[j].radio/planetas[g].radio;
+          let dcolor_j = planetas[j].radio/planetas[g].radio;     
+ 
+          let color_r = (parseInt(clr1.slice(0,2),16)*dcolor_i + parseInt(clr2.slice(0,2),16)*dcolor_j)/2;
+          color_r = Math.trunc(color_r).toString(16);
+          let color_g = (parseInt(clr1.slice(2,4),16)*dcolor_i + parseInt(clr2.slice(2,4),16)*dcolor_j)/2;
+          color_g = Math.trunc(color_g).toString(16);
+          let color_b = (parseInt(clr1.slice(4,6),16)*dcolor_i + parseInt(clr2.slice(4,6),16)*dcolor_j)/2;
+          color_b = Math.trunc(color_b).toString(16);
+
+          planetas[g].color = "#" + color_r + color_g + color_b;
           
           // Borro el planeta perdedor.
           planetas.splice(p, 1);
+
+          // Reseteo los indices.
+          i = -1;
+          break;
         }
       }
     }
@@ -146,7 +174,7 @@
   
   
   
-	// Funciones de manejo de canvas.
+  // Funciones de manejo de canvas.
   function limpiarPantalla() {pincel.clearRect (0,0,1024,550);}
   
   function actualizarPantalla() {
@@ -162,5 +190,5 @@
     dibujarPlanetas();
   }
 
-  setInterval(actualizarPantalla, 15)
+  setInterval(actualizarPantalla, 17)
 </script>
